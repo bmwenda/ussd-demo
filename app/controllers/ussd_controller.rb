@@ -1,16 +1,24 @@
 class UssdController < ApplicationController
+  class InvalidMenuOption < StandardError;
+
+  end
   def callback
-    menu_option = request.body.read
+    menu_option = ussd_params[:text]
     result = response_text(menu_option)
     render plain: result, status: :ok
-  rescue RuntimeError => e
-    Rails.logger.error "Invalid menu option: #{menu_option}"
-    render plain: e, status: :bad_request
+  rescue InvalidMenuOption => e
+    Rails.logger.error e.to_s
+    render plain: "END The menu option #{menu_option} is not valid", status: :bad_request
   end
 
   private
 
+  def ussd_params
+    params.permit(:phoneNumber, :serviceCode, :text, :sessionId, :networkCode)
+  end
+
   def response_text(menu_option)
+    Rails.logger.info "Evaluating menu option: --#{menu_option}--"
     case menu_option
     when '' || nil
       welcome_menu
@@ -23,7 +31,7 @@ class UssdController < ApplicationController
     when '1*2'
       account_balance
     else
-      raise 'Unknown menu option:' + menu_option
+      raise InvalidMenuOption.new "Invalid menu option: #{menu_option}"
     end
   end
 
