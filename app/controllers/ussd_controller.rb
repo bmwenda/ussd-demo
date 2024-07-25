@@ -1,7 +1,6 @@
 class UssdController < ApplicationController
-  class InvalidMenuOption < StandardError;
+  class InvalidMenuOption < StandardError; end
 
-  end
   def callback
     menu_option = ussd_params[:text]
     result = response_text(menu_option)
@@ -52,7 +51,7 @@ class UssdController < ApplicationController
   end
 
   def phone_number
-    "END Your phone number is 254 000 000"
+    'END Your phone number is 254 000 000'
   end
 
   def account_number
